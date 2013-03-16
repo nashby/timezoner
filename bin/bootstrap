@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+md5() { openssl md5 $*; }
+
+if [ ! -f .bundle/checksum ] || [[ "`md5 Gemfile*`" != "`cat .bundle/checksum`" ]]; then
+  bundle install \
+    --path vendor/bundle
+  md5 Gemfile* > .bundle/checksum
+fi
+
+cp config/database.example.yml config/database.yml
+
+bundle exec rake db:create db:migrate
+
+echo 'Impoting timezones...'
+
+bundle exec rake timezones:import SHAPEFILE=db/world/tz_world.shp
