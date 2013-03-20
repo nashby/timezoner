@@ -10,6 +10,8 @@ if [ ! -f .bundle/checksum ] || [[ "`md5 Gemfile*`" != "`cat .bundle/checksum`" 
 fi
 
 cp config/database.example.yml config/database.yml
+echo "Timezoner::Application.config.secret_key_base = '`openssl rand -base64 32`'" > \
+  config/initializers/secret_token.rb
 
 bundle exec rake db:create db:migrate
 
