@@ -1,19 +1,16 @@
 #!/bin/bash
 set -e
 
-md5() { openssl md5 $*; }
-
-if [ ! -f .bundle/checksum ] || [[ "`md5 Gemfile*`" != "`cat .bundle/checksum`" ]]; then
-  bundle install \
-    --path vendor/bundle
-  md5 Gemfile* > .bundle/checksum
-fi
+bundle install --path vendor/bundle
 
 cp config/database.example.yml config/database.yml
-echo "Timezoner::Application.config.secret_key_base = '`openssl rand -base64 32`'" > \
-  config/initializers/secret_token.rb
 
-bundle exec rake db:create db:migrate
+if [ ! -f config/initializers/secret_token.rb ]; then
+  echo "Timezoner::Application.config.secret_key_base = '`bundle exec rake secret`'" > \
+    config/initializers/secret_token.rb
+fi
+
+bundle exec rake db:setup
 
 echo 'Impoting timezones...'
 
